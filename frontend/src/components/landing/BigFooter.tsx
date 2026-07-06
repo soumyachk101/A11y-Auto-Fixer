@@ -58,6 +58,7 @@ export function BigFooter({
             </p>
             <button
               type="button"
+              data-magnetic
               onClick={onScanClick}
               className="mt-5 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-ink hover:opacity-90 active:opacity-80"
             >

@@ -518,7 +518,8 @@ export function Landing() {
                   type="submit"
                   data-tabstop
                   data-announce="Scan, button"
-                  className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-ink transition-transform hover:scale-[1.03] active:scale-[0.98]"
+                  data-magnetic
+                  className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-ink hover:opacity-90"
                 >
                   Scan
                 </button>
@@ -689,7 +690,7 @@ export function Landing() {
       <section data-cta-section className="border-t border-border px-4 py-28 text-center sm:px-6">
         <h2 data-cta className="mx-auto max-w-3xl text-balance font-display text-4xl font-bold tracking-tight sm:text-6xl">
           Ship a site{" "}
-          <span className="text-accent">
+          <span className="inline-block whitespace-nowrap text-accent">
             {"everyone".split("").map((ch, i) => (
               <span key={i} data-wave-char className="inline-block">
                 {ch}
@@ -705,13 +706,15 @@ export function Landing() {
           <button
             type="button"
             onClick={focusScanInput}
-            className="rounded-lg bg-primary px-7 py-3 text-sm font-semibold text-primary-ink transition-transform hover:scale-[1.03] active:scale-[0.98]"
+            data-magnetic
+            className="rounded-lg bg-primary px-7 py-3 text-sm font-semibold text-primary-ink hover:opacity-90"
           >
             Scan your site
           </button>
           <button
             type="button"
             onClick={() => void startSampleScan(sampleHtml)}
+            data-magnetic
             className="rounded-lg border border-border px-7 py-3 text-sm font-semibold text-text transition-colors hover:border-primary hover:text-primary"
           >
             Try the sample

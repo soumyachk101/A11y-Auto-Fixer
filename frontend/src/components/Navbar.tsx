@@ -17,7 +17,7 @@ function LensMark() {
     <svg viewBox="0 0 28 28" aria-hidden="true" className="size-7">
       <circle cx="14" cy="14" r="11" fill="none" stroke="var(--color-primary)" strokeWidth="1.6" />
       <circle cx="14" cy="14" r="5.5" fill="none" stroke="var(--color-accent)" strokeWidth="1.6" />
-      <circle cx="14" cy="14" r="1.8" fill="var(--color-text)" />
+      <circle data-pupil cx="14" cy="14" r="1.8" fill="var(--color-text)" />
       <path d="M25 14h3" stroke="var(--color-primary)" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
@@ -81,6 +81,27 @@ export function Navbar({ onScanClick }: { onScanClick: () => void }) {
       }
 
       const mm = gsap.matchMedia();
+
+      // The lens logo watches the pointer
+      mm.add("(pointer: fine) and (prefers-reduced-motion: no-preference)", () => {
+        const pupil = navRef.current?.querySelector<SVGCircleElement>("[data-pupil]");
+        const mark = pupil?.closest("svg");
+        if (!pupil || !mark) return;
+        const xTo = gsap.quickTo(pupil, "x", { duration: 0.5, ease: "power3" });
+        const yTo = gsap.quickTo(pupil, "y", { duration: 0.5, ease: "power3" });
+        const look = (e: PointerEvent) => {
+          const r = mark.getBoundingClientRect();
+          const dx = e.clientX - (r.left + r.width / 2);
+          const dy = e.clientY - (r.top + r.height / 2);
+          const len = Math.hypot(dx, dy) || 1;
+          const reach = Math.min(1, len / 120) * 3;
+          xTo((dx / len) * reach);
+          yTo((dy / len) * reach);
+        };
+        window.addEventListener("pointermove", look, { passive: true });
+        return () => window.removeEventListener("pointermove", look);
+      });
+
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         gsap.from("[data-nav-item]", {
           y: -18,
@@ -164,6 +185,7 @@ export function Navbar({ onScanClick }: { onScanClick: () => void }) {
           <button
             type="button"
             data-nav-item
+            data-magnetic
             onClick={onScanClick}
             className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-ink hover:opacity-90 active:opacity-80"
           >

@@ -47,7 +47,50 @@ function DemoCard({ fixed }: { fixed: boolean }) {
 
 export function FixSlider() {
   const sectionRef = useRef<HTMLElement>(null);
+  const burstRef = useRef<HTMLDivElement>(null);
+  const firedRef = useRef(false);
+  const nudgeRef = useRef<gsap.core.Tween | null>(null);
   const [pos, setPos] = useState(50);
+
+  const { contextSafe } = useGSAP({ scope: sectionRef });
+
+  // Little payoff when the wipe fully reveals the fixed card
+  const celebrate = contextSafe(() => {
+    const host = burstRef.current;
+    if (!host || firedRef.current) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    firedRef.current = true;
+    const bits = ["✓", "✓", "AA", "✓", "7.4:1", "✓", "✓", "alt", "✓", "✓", "aria", "✓"];
+    bits.forEach((txt, i) => {
+      const el = document.createElement("span");
+      el.textContent = txt;
+      el.className =
+        "pointer-events-none absolute left-4 top-1/2 font-mono text-xs font-bold " +
+        (i % 3 ? "text-[#0c7a4d]" : "text-accent");
+      host.appendChild(el);
+      gsap.fromTo(
+        el,
+        { x: 0, y: 0, opacity: 1, scale: 0.6, rotate: 0 },
+        {
+          x: gsap.utils.random(-30, 170),
+          y: gsap.utils.random(-130, -30),
+          rotate: gsap.utils.random(-90, 90),
+          scale: gsap.utils.random(0.9, 1.5),
+          opacity: 0,
+          duration: gsap.utils.random(0.9, 1.5),
+          ease: "power2.out",
+          onComplete: () => el.remove(),
+        },
+      );
+    });
+  });
+
+  const updatePos = (next: number) => {
+    nudgeRef.current?.kill(); // user took over — stop the discovery nudge
+    setPos(next);
+    if (next <= 3) celebrate(); // divider at far left = fixed card fully revealed
+    if (next >= 80) firedRef.current = false; // re-arm after a swing back
+  };
 
   useGSAP(
     () => {
@@ -62,7 +105,7 @@ export function FixSlider() {
         });
         // Nudge the wipe once on entry so the interaction is discoverable
         const proxy = { v: 50 };
-        gsap.to(proxy, {
+        nudgeRef.current = gsap.to(proxy, {
           v: 78,
           duration: 1.1,
           ease: "power2.inOut",
@@ -94,6 +137,7 @@ export function FixSlider() {
         </div>
 
         <div data-slider-el data-wipe className="relative mt-12 select-none">
+          <div ref={burstRef} aria-hidden="true" className="pointer-events-none absolute inset-0 z-20 overflow-visible" />
           <div className="relative h-56 sm:h-52">
             {/* Fixed version underneath */}
             <div className="absolute inset-0">
@@ -122,8 +166,8 @@ export function FixSlider() {
               min={0}
               max={100}
               value={pos}
-              onChange={(e) => setPos(Number(e.target.value))}
-              aria-label="Reveal the broken version (left) versus the fixed version (right)"
+              onChange={(e) => updatePos(Number(e.target.value))}
+              aria-label="Move the divider: slide left to reveal the fixed card, right to reveal the broken one"
               className="h-1.5 flex-1 cursor-ew-resize appearance-none rounded-full bg-paper-ink/20 accent-[#14212b]"
             />
             <span className="font-mono text-[10px] uppercase tracking-wider text-[#0c7a4d]">after ✓</span>
