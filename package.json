@@ -1,0 +1,18 @@
+{
+  "name": "accesslens",
+  "private": true,
+  "version": "1.0.0",
+  "description": "AccessLens — find it, fix it, ship accessible. AI-powered WCAG scanner that generates the actual code fixes.",
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,magenta \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "seed": "npm run seed -w backend"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

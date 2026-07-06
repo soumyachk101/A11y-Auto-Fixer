@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+/* AccessLens design tokens — Docs/06-ui-ux.md §2, v2 "optician's studio" pass.
+   Marine ink shell, lens-teal interactive, paper sections with amber
+   highlighter on the landing. All text pairings meet WCAG AA. */
+@theme {
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "Inter Variable", ui-sans-serif, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", monospace;
+
+  --color-bg: #0b141c;
+  --color-surface: #111e29;
+  --color-surface-2: #182837;
+  --color-border: #24384a;
+  --color-text: #edf4f8;
+  --color-muted: #a3b6c4;
+  --color-primary: #37d5c8;
+  --color-primary-ink: #04211e;
+  --color-accent: #ffb454;
+  --color-paper: #f2f4ee;
+  --color-paper-ink: #14212b;
+  --color-paper-muted: #4f5f6a;
+  --color-success: #3dd68c;
+  --color-warning: #f5b23d;
+  --color-danger: #ff5c6c;
+  --color-serious: #ff8a3d;
+  --color-focus: #6fe8db;
+}
+
+html {
+  background: var(--color-bg);
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Anchor targets clear the fixed navbar */
+html {
+  scroll-padding-top: 4.5rem;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible focus everywhere — never outline:none without replacement */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Landing: amber highlighter behind key phrases (paper sections). Painted as
+   a background so it survives line wraps; GSAP sweeps background-size in. */
+.al-mark {
+  padding: 0 0.08em;
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--color-accent) 60%, transparent),
+    color-mix(in srgb, var(--color-accent) 60%, transparent)
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 82%;
+  background-position: left 70%;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* SR-simulator waveform bars */
+@keyframes al-wave {
+  from {
+    transform: scaleY(0.4);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* Scan progress shimmer sweep */
+@keyframes al-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+
+/* Active scan-stage pulse ring */
+@keyframes al-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 45%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+}
+
+/* Landing rule-ticker marquee (content duplicated once, so -50% loops) */
+@keyframes al-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

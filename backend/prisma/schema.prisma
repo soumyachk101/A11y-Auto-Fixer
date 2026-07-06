@@ -1,0 +1,85 @@
+// AccessLens data model — see Docs/05-database.md
+// SQLite build: enums stored as String (values match 04-backend-schema.md enums),
+// Json stored as String. Postgres swap = change provider + restore enums.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  scans     Scan[]
+  createdAt DateTime @default(now())
+}
+
+model Scan {
+  id            String    @id @default(cuid())
+  user          User?     @relation(fields: [userId], references: [id])
+  userId        String?
+  url           String
+  pageTitle     String?
+  status        String    @default("pending") // pending|rendering|scanning|analyzing|fixing|complete|failed
+  errorCode     String?                       // set when status=failed (e.g. SCAN_UNREACHABLE)
+  errorMessage  String?
+  scoreBefore   Int?
+  scoreAfter    Int?
+  rawAxeResults String?                       // full axe output JSON (debugging/export)
+  pageHtml      String?                       // rendered HTML snapshot (patched-HTML export source)
+  issues        Issue[]
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+model Issue {
+  id              String   @id @default(cuid())
+  scan            Scan     @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  scanId          String
+  ruleId          String   // axe rule id, e.g. "image-alt"
+  wcagCriterion   String   // e.g. "1.1.1 Non-text Content"
+  severity        String   // critical|serious|moderate|minor
+  category        String   // alt-text|aria-label|contrast|structure|lang|other
+  impactScore     Int      @default(0)
+  status          String   @default("detected") // detected|fixed|dismissed
+  description     String
+  helpUrl         String?
+  elementSelector String
+  elementHtml     String
+  imageUrl        String?
+  contextHtml     String?  // surrounding DOM snippet (LLM context)
+  contrastData    String?  // JSON: {fgColor,bgColor,fontSize,fontWeight,expectedRatio,actualRatio}
+  fix             Fix?
+  createdAt       DateTime @default(now())
+
+  @@index([scanId])
+  @@index([scanId, status])
+  @@index([category])
+}
+
+model Fix {
+  id           String    @id @default(cuid())
+  issue        Issue     @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issueId      String    @unique
+  fixType      String    // alt-text|aria-label|contrast|structure|lang|other
+  source       String    // ai-vision|ai-llm|deterministic
+  originalCode String
+  fixedCode    String
+  explanation  String?
+  confidence   Float?    // 0..1 for AI fixes; null for deterministic
+  decorative   Boolean   @default(false)
+  needsReview  Boolean   @default(false) // low confidence or fallback fix
+  srBefore     String?
+  srAfter      String?
+  appliedAt    DateTime?
+  createdAt    DateTime  @default(now())
+}
